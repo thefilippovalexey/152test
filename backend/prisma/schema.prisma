@@ -1,0 +1,39 @@
+// Prisma schema for FZ-152 Document Generator Service
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  requests  DocumentRequest[]
+}
+
+model DocumentRequest {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents   Json     // Array of selected document types
+  formData    Json     // Dynamic form data submitted by user
+  status      String   @default("pending") // pending, completed, failed
+  zipPath     String?  // Path to generated ZIP file (temporary)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VersionConfig {
+  id            String   @id @default("current")
+  serverVersion String   @default("1.0.0")
+  apiVersion    String   @default("v1")
+  minClientVersion String @default("1.0.0")
+  updatedAt     DateTime @updatedAt
+}
